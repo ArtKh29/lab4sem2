@@ -1,0 +1,32 @@
+#ifndef PERSON_H
+#define PERSON_H
+
+#include <QString>
+#include <QList>
+
+class Person
+{
+public:
+    QString surname;
+    QString name;
+    QString patronymic;
+    QString phone;
+    QString gender;           // "Мужской" или "Женский"
+    QList<QString> languages;
+
+    // Конструктор по умолчанию
+    Person();
+
+    // Конструктор с параметрами (удобно для заполнения)
+    Person(const QString &surname,
+           const QString &name,
+           const QString &patronymic,
+           const QString &phone,
+           const QString &gender,
+           const QList<QString> &languages);
+
+    // Метод записи в файл
+    bool saveToFile(const QString &filename = "result.txt") const;
+};
+
+#endif // PERSON_H
