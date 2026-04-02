@@ -1,0 +1,99 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "person.h"
+#include <QMessageBox>
+#include <QRegularExpression>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+
+    // Валидаторы
+    QRegularExpression nameRx(R"(^[А-ЯA-Z][а-яa-zА-ЯA-Z]*$)");
+    ui->leSurname->setValidator(new QRegularExpressionValidator(nameRx, this));
+    ui->leName->setValidator(new QRegularExpressionValidator(nameRx, this));
+    ui->lePatronymic->setValidator(new QRegularExpressionValidator(nameRx, this));
+
+    QRegularExpression phoneRx(R"(^(\+?[17]|8|\+39|\+1)?\d{10}$)");
+    ui->lePhone->setValidator(new QRegularExpressionValidator(phoneRx, this));
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_btnSave_clicked()
+{
+    // Проверка обязательных полей
+    if (ui->leSurname->text().trimmed().isEmpty() ||
+        ui->leName->text().trimmed().isEmpty() ||
+        ui->lePhone->text().trimmed().isEmpty()) {
+        QMessageBox::warning(this, "Ошибка", "Фамилия, Имя и Номер телефона — обязательные поля!");
+        return;
+    }
+
+    // Валидация форматов
+    if (!ui->leSurname->hasAcceptableInput()) {
+        QMessageBox::warning(this, "Ошибка", "Фамилия должна начинаться с заглавной буквы (рус/англ)");
+        return;
+    }
+    if (!ui->leName->hasAcceptableInput()) {
+        QMessageBox::warning(this, "Ошибка", "Имя должно начинаться с заглавной буквы (рус/англ)");
+        return;
+    }
+    if (!ui->lePatronymic->text().isEmpty() && !ui->lePatronymic->hasAcceptableInput()) {
+        QMessageBox::warning(this, "Ошибка", "Отчество, если указано, должно начинаться с заглавной буквы");
+        return;
+    }
+    if (!ui->lePhone->hasAcceptableInput()) {
+        QMessageBox::warning(this, "Ошибка", "Номер телефона должен быть в формате +7XXXXXXXXXX, 8XXXXXXXXXX или 10 цифр");
+        return;
+    }
+
+    // Сбор языков
+    QList<QString> langs;
+    if (ui->cbRussian->isChecked()) langs << "Русский";
+    if (ui->cbEnglish->isChecked()) langs << "Английский";
+    if (ui->cbFrench->isChecked())  langs << "Французский";
+
+    if (langs.isEmpty()) {
+        QMessageBox::warning(this, "Ошибка", "Выберите хотя бы один язык");
+        return;
+    }
+
+    QString gender = ui->rbMale->isChecked() ? "Мужской" : "Женский";
+
+    // Создаём объект Person
+    Person p(ui->leSurname->text().trimmed(),
+             ui->leName->text().trimmed(),
+             ui->lePatronymic->text().trimmed(),
+             ui->lePhone->text().trimmed(),
+             gender,
+             langs);
+
+    // Сохраняем
+    if (p.saveToFile()) {
+        QMessageBox::information(this, "Успех", "Данные успешно сохранены в result.txt");
+        // Можно сбросить форму после успешного сохранения (по желанию)
+        // on_btnReset_clicked();
+    } else {
+        QMessageBox::critical(this, "Ошибка", "Не удалось записать в result.txt");
+    }
+}
+
+void MainWindow::on_btnReset_clicked()
+{
+    ui->leSurname->clear();
+    ui->leName->clear();
+    ui->lePatronymic->clear();
+    ui->lePhone->clear();
+
+    ui->rbMale->setChecked(true);
+
+    ui->cbRussian->setChecked(true);
+    ui->cbEnglish->setChecked(true);
+    ui->cbFrench->setChecked(false);
+}
