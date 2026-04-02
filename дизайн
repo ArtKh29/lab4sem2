@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>420</width>
+    <height>380</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Анкета</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelSurname">
+        <property name="text">
+         <string>Фамилия</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="leSurname"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelName">
+        <property name="text">
+         <string>Имя</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="leName"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelPatronymic">
+        <property name="text">
+         <string>Отчество</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="lePatronymic"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labelPhone">
+        <property name="text">
+         <string>Номер телефона</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="lePhone"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="labelGender">
+        <property name="text">
+         <string>Пол</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayoutGender">
+        <item>
+         <widget class="QRadioButton" name="rbMale">
+          <property name="text">
+           <string>Мужской</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbFemale">
+          <property name="text">
+           <string>Женский</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="labelLanguages">
+        <property name="text">
+         <string>Языки</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <layout class="QVBoxLayout" name="verticalLayoutLanguages">
+        <item>
+         <widget class="QCheckBox" name="cbRussian">
+          <property name="text">
+           <string>Русский</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbEnglish">
+          <property name="text">
+           <string>Английский</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbFrench">
+          <property name="text">
+           <string>Французский</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayoutButtons">
+      <item>
+       <widget class="QPushButton" name="btnReset">
+        <property name="text">
+         <string>Сброс</string>
+        </property>
+        <property name="styleSheet">
+         <string>background-color: #e74c3c; color: white;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnSave">
+        <property name="text">
+         <string>Сохранить</string>
+        </property>
+        <property name="styleSheet">
+         <string>background-color: #2ecc71; color: white;</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
