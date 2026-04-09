@@ -2,38 +2,58 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QRegularExpressionValidator>
+#include <QLineEdit>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QPushButton>
+#include <QStringList>
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
+class Person {
+public:
+    QString lastName;
+    QString firstName;
+    QString middleName;
+    QString phone;
+    QString gender;
+    QStringList languages;
+
+    Person() = default;
+    Person(const QString& ln, const QString& fn, const QString& mn,
+           const QString& ph, const QString& g, const QStringList& langs);
+
+    bool saveToFile(const QString& filename = "result.txt") const;
+};
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
-    void on_btnReset_clicked();      // Сброс
-    void on_btnSave_clicked();       // Сохранить
+    void onSaveClicked();
+    void onResetClicked();
 
 private:
-    Ui::MainWindow *ui;
+    QLineEdit *leLastName;
+    QLineEdit *leFirstName;
+    QLineEdit *leMiddleName;
+    QLineEdit *lePhone;
 
-    // Регулярные выражения по твоим правилам
-    bool validateSurname();     // 1. анг+рус, первая буква заглавная
-    bool validateName();        // 2. то же самое
-    bool validatePatronymic();  // 3. может быть пустым
-    bool validatePhone();       // 4. +7... или 8... или 10 цифр
-    bool validateGender();      // обязательно выбран
-    bool validateLanguages();   // хотя бы один
+    QRadioButton *rbMale;
+    QRadioButton *rbFemale;
 
-    void showError(const QString &field, const QString &message);
-    void saveToFile();
-    void clearForm();
+    QCheckBox *cbRussian;
+    QCheckBox *cbEnglish;
+
+    QPushButton *btnReset;
+    QPushButton *btnSave;
+
+    void setupValidators();
+    bool validateForm(QString &errorField) const;
+    void resetForm();
 };
 
 #endif // MAINWINDOW_H
