@@ -1,156 +1,166 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include <QVBoxLayout>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QRegularExpressionValidator>
 #include <QMessageBox>
 #include <QFile>
 #include <QTextStream>
-#include <QRegularExpression>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+Person::Person(const QString& ln, const QString& fn, const QString& mn,
+               const QString& ph, const QString& g, const QStringList& langs)
+    : lastName(ln), firstName(fn), middleName(mn),
+    phone(ph), gender(g), languages(langs) {}
+
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    ui->setupUi(this);
+    QWidget *central = new QWidget(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(central);
 
-    // Устанавливаем валидаторы сразу при запуске
+    QFormLayout *form = new QFormLayout();
+    leLastName   = new QLineEdit(this);
+    leFirstName  = new QLineEdit(this);
+    leMiddleName = new QLineEdit(this);
+    lePhone      = new QLineEdit(this);
 
-    // 1 и 2: Фамилия и Имя — русские + английские буквы, первая заглавная, остальное строчные
-    QRegularExpression nameRx(R"(^[А-ЯA-Z][а-яa-zА-ЯA-Z]*$)");
-    ui->leSurname->setValidator(new QRegularExpressionValidator(nameRx, this));
-    ui->leName->setValidator(new QRegularExpressionValidator(nameRx, this));
+    form->addRow("Фамилия:", leLastName);
+    form->addRow("Имя:", leFirstName);
+    form->addRow("Отчество:", leMiddleName);
+    form->addRow("Номер телефона:", lePhone);
 
-    // 3: Отчество — такое же, но может быть пустым
-    ui->lePatronymic->setValidator(new QRegularExpressionValidator(nameRx, this));
+    // Пол
+    QGroupBox *gbGender = new QGroupBox("Пол");
+    QHBoxLayout *genderLayout = new QHBoxLayout(gbGender);
+    rbMale   = new QRadioButton("Мужской");
+    rbFemale = new QRadioButton("Женский");
+    rbMale->setChecked(true);
+    genderLayout->addWidget(rbMale);
+    genderLayout->addWidget(rbFemale);
 
-    // 4: Телефон — +7 или 8 или просто 10 цифр после кода
-    QRegularExpression phoneRx(R"(^(\+7|8|\+1|\+39)?\d{10}$)");
-    ui->lePhone->setValidator(new QRegularExpressionValidator(phoneRx, this));
+    QGroupBox *gbLang = new QGroupBox("Языки");
+    QVBoxLayout *langLayout = new QVBoxLayout(gbLang);
+    cbRussian = new QCheckBox("Русский");
+    cbEnglish = new QCheckBox("Английский");
+    cbRussian->setChecked(true);
+    langLayout->addWidget(cbRussian);
+    langLayout->addWidget(cbEnglish);
 
-    // Начальное состояние (как на картинке)
-    ui->rbMale->setChecked(true);
-    ui->cbRussian->setChecked(true);
-    ui->cbEnglish->setChecked(true);
+    // Кнопки
+    QHBoxLayout *btnLayout = new QHBoxLayout();
+    btnReset = new QPushButton("Сброс");
+    btnSave  = new QPushButton("Сохранить");
+
+    btnReset->setStyleSheet("background-color: #ff6666; color: white;");
+    btnSave->setStyleSheet("background-color: #66cc66; color: white;");
+
+    btnLayout->addWidget(btnReset);
+    btnLayout->addWidget(btnSave);
+
+    mainLayout->addLayout(form);
+    mainLayout->addWidget(gbGender);
+    mainLayout->addWidget(gbLang);
+    mainLayout->addLayout(btnLayout);
+
+    setCentralWidget(central);
+    setWindowTitle("Анкета");
+
+    setupValidators();
+
+    connect(btnSave,  &QPushButton::clicked, this, &MainWindow::onSaveClicked);
+    connect(btnReset, &QPushButton::clicked, this, &MainWindow::onResetClicked);
 }
 
-MainWindow::~MainWindow()
+void MainWindow::setupValidators()
 {
-    delete ui;
+    QRegularExpression nameRx("^[А-ЯЁA-Z][а-яёa-z]*$");
+    auto *nameVal = new QRegularExpressionValidator(nameRx, this);
+
+    leLastName->setValidator(nameVal);
+    leFirstName->setValidator(nameVal);
+    leMiddleName->setValidator(nameVal);
+
+    QRegularExpression phoneRx(R"(^\+([17]|395)?\d{10}$)");
+    lePhone->setValidator(new QRegularExpressionValidator(phoneRx, this));
 }
 
-// ====================== ВАЛИДАЦИЯ ======================
-
-bool MainWindow::validateSurname()
+bool MainWindow::validateForm(QString &errorField) const
 {
-    QString s = ui->leSurname->text().trimmed();
-    if (s.isEmpty()) return false;
-    QRegularExpression rx(R"(^[А-ЯA-Z][а-яa-zА-ЯA-Z]*$)");
-    return rx.match(s).hasMatch();
+    if (leLastName->text().trimmed().isEmpty())  { errorField = "Фамилия"; return false; }
+    if (leFirstName->text().trimmed().isEmpty()) { errorField = "Имя"; return false; }
+    if (lePhone->text().trimmed().isEmpty())     { errorField = "Номер телефона"; return false; }
+
+    if (!leLastName->hasAcceptableInput())  { errorField = "Фамилия (формат)"; return false; }
+    if (!leFirstName->hasAcceptableInput()) { errorField = "Имя (формат)"; return false; }
+    if (!leMiddleName->hasAcceptableInput() && !leMiddleName->text().isEmpty()) {
+        errorField = "Отчество (формат)"; return false;
+    }
+    if (!lePhone->hasAcceptableInput()) { errorField = "Номер телефона (формат)"; return false; }
+
+    return true;
 }
 
-bool MainWindow::validateName()
+void MainWindow::onSaveClicked()
 {
-    QString s = ui->leName->text().trimmed();
-    if (s.isEmpty()) return false;
-    QRegularExpression rx(R"(^[А-ЯA-Z][а-яa-zА-ЯA-Z]*$)");
-    return rx.match(s).hasMatch();
-}
-
-bool MainWindow::validatePatronymic()
-{
-    QString s = ui->lePatronymic->text().trimmed();
-    if (s.isEmpty()) return true;                    // разрешено пустое
-    QRegularExpression rx(R"(^[А-ЯA-Z][а-яa-zА-ЯA-Z]*$)");
-    return rx.match(s).hasMatch();
-}
-
-bool MainWindow::validatePhone()
-{
-    QString s = ui->lePhone->text().trimmed();
-    if (s.isEmpty()) return false;
-
-    // Примеры, которые проходят: +7123456789, 87123456789, 7123456789, +13951234567 и т.д.
-    QRegularExpression rx(R"(^(\+?[17]|8|\+39|\+1)?\d{10}$)");
-    return rx.match(s).hasMatch();
-}
-
-bool MainWindow::validateGender()
-{
-    return ui->rbMale->isChecked() || ui->rbFemale->isChecked();
-}
-
-bool MainWindow::validateLanguages()
-{
-    return ui->cbRussian->isChecked() ||
-           ui->cbEnglish->isChecked() ||
-           ui->cbFrench->isChecked();
-}
-
-// ====================== КНОПКА "СОХРАНИТЬ" ======================
-
-void MainWindow::on_btnSave_clicked()
-{
-    QString errorMsg;
-
-    if (!validateSurname())     errorMsg += "• Фамилия\n";
-    if (!validateName())        errorMsg += "• Имя\n";
-    if (!validatePatronymic())  errorMsg += "• Отчество (если указано — должно быть корректно)\n";
-    if (!validatePhone())       errorMsg += "• Номер телефона (+7/8/10 цифр)\n";
-    if (!validateGender())      errorMsg += "• Пол\n";
-    if (!validateLanguages())   errorMsg += "• Хотя бы один язык\n";
-
-    if (!errorMsg.isEmpty()) {
-        QMessageBox::warning(this, "Ошибка валидации",
-                             "Следующие поля заполнены неверно:\n\n" + errorMsg);
+    QString error;
+    if (!validateForm(error)) {
+        QMessageBox::warning(this, "Ошибка", "Поле не соответствует требованиям: " + error);
         return;
     }
 
-    // Всё ок — сохраняем
-    saveToFile();
-    QMessageBox::information(this, "Успех", "Данные успешно сохранены в result.txt");
+    QString gender = rbMale->isChecked() ? "Мужской" : "Женский";
+
+    QStringList langs;
+    if (cbRussian->isChecked()) langs << "Русский";
+    if (cbEnglish->isChecked()) langs << "Английский";
+
+    Person p(leLastName->text().trimmed(),
+             leFirstName->text().trimmed(),
+             leMiddleName->text().trimmed(),
+             lePhone->text().trimmed(),
+             gender,
+             langs);
+
+    if (p.saveToFile()) {
+        QMessageBox::information(this, "Успех", "Данные сохранены в result.txt");
+        resetForm();
+    } else {
+        QMessageBox::critical(this, "Ошибка", "Не удалось сохранить файл");
+    }
 }
 
-// ====================== СОХРАНЕНИЕ В ФАЙЛ ======================
-
-void MainWindow::saveToFile()
+void MainWindow::onResetClicked()
 {
-    QFile file("result.txt");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::critical(this, "Ошибка", "Не удалось открыть result.txt для записи");
-        return;
-    }
+    resetForm();
+}
+
+void MainWindow::resetForm()
+{
+    leLastName->clear();
+    leFirstName->clear();
+    leMiddleName->clear();
+    lePhone->clear();
+
+    rbMale->setChecked(true);
+    cbRussian->setChecked(true);
+    cbEnglish->setChecked(false);
+}
+
+bool Person::saveToFile(const QString& filename) const
+{
+    QFile file(filename);
+    if (!file.open(QIODevice::Append | QIODevice::Text))
+        return false;
 
     QTextStream out(&file);
-    out << "Фамилия: " << ui->leSurname->text() << "\n";
-    out << "Имя: " << ui->leName->text() << "\n";
-    out << "Отчество: " << ui->lePatronymic->text() << "\n";
-    out << "Телефон: " << ui->lePhone->text() << "\n";
-    out << "Пол: " << (ui->rbMale->isChecked() ? "Мужской" : "Женский") << "\n";
-    out << "Языки: ";
-    if (ui->cbRussian->isChecked()) out << "Русский ";
-    if (ui->cbEnglish->isChecked()) out << "Английский ";
-    if (ui->cbFrench->isChecked())  out << "Французский";
-    out << "\n";
+    out << "Фамилия: " << lastName << "\n";
+    out << "Имя: " << firstName << "\n";
+    out << "Отчество: " << (middleName.isEmpty() ? "(нет)" : middleName) << "\n";
+    out << "Телефон: " << phone << "\n";
+    out << "Пол: " << gender << "\n";
+    out << "Языки: " << (languages.isEmpty() ? "Нет" : languages.join(", ")) << "\n";
+    out << "----------------------------------------\n";
 
-    file.close();
+    return true;
 }
 
-// ====================== КНОПКА "СБРОС" ======================
-
-void MainWindow::on_btnReset_clicked()
-{
-    clearForm();
-}
-
-void MainWindow::clearForm()
-{
-    ui->leSurname->clear();
-    ui->leName->clear();
-    ui->lePatronymic->clear();
-    ui->lePhone->clear();
-
-    ui->rbMale->setChecked(true);
-    ui->rbFemale->setChecked(false);
-
-    ui->cbRussian->setChecked(true);
-    ui->cbEnglish->setChecked(true);
-    ui->cbFrench->setChecked(false);
-}
+MainWindow::~MainWindow() {}
