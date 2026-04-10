@@ -45,7 +45,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     langLayout->addWidget(cbRussian);
     langLayout->addWidget(cbEnglish);
 
-    // Кнопки
     QHBoxLayout *btnLayout = new QHBoxLayout();
     btnReset = new QPushButton("Сброс");
     btnSave  = new QPushButton("Сохранить");
