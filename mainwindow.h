@@ -56,4 +56,4 @@ private:
     void resetForm();
 };
 
-#endif // MAINWINDOW_H
+#endif
